@@ -33,6 +33,13 @@ def send_random(message):
 
 @bot.message_handler(commands=['startparser'])
 def send_parser(message):
-    start_parser = simple_search()
-    bot.send_message(message.chat.id, f"Результат работы парсера: {start_parser}")
+    bot.send_message(message.chat.id, "Запрашиваю время, подожди...") # Сообщение для пользователя
+    
+    start_parser = simple_search() # Вызываем обновленную функцию
+    
+    # Проверяем, что вернул парсер
+    if "Ошибка" in start_parser or "Не удалось найти" in start_parser:
+        bot.send_message(message.chat.id, f"Произошла ошибка: {start_parser}")
+    else:
+        bot.send_message(message.chat.id, f"Текущее время во Владикавказе: {start_parser}")
 bot.polling()
