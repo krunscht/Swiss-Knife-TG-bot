@@ -1,12 +1,18 @@
+#ымпорты
 import telebot
 import random
-from parser import simple_search
 import configparser
+import pytz
+from datetime import datetime
+import requests
 
+#чтоб бота не украли
 config = configparser.ConfigParser()
 config.read("bot_config.ini")
 BOT_TOKEN = config["telegram"]["BOT_TOKEN"]
 bot = telebot.TeleBot(BOT_TOKEN)
+#апи сократитъ ссылку
+CUTTLY_API_KEY = config["cuttly"]["API_KEY"]
 
 # старт
 @bot.message_handler(commands=['start'])
@@ -23,23 +29,47 @@ def send_welcome(message):
         f"Здравствуйте, {user_name}!",
         reply_markup=keyboard
     )
-
+#orel or reshka
 @bot.message_handler(commands=['random'])
 def send_random(message):
     
     monet = random.choice(["орел", "решка"])
-    # отправка числа
+    # result
     bot.send_message(message.chat.id, f"Я бросил монету и выпал(-a) {monet}")
 
-@bot.message_handler(commands=['startparser'])
-def send_parser(message):
-    bot.send_message(message.chat.id, "Запрашиваю время, подожди...") # Сообщение для пользователя
+@bot.message_handler(commands=['get_time'])
+def send_time(message):
+    #чтоб чекать time
+    tz_vladikavkaz = pytz.timezone('Europe/Moscow')
+    current_time = datetime.now(tz_vladikavkaz)
+    formatted_time = current_time.strftime('%H:%M:%S')
+    bot.send_message(message.chat.id, f"Текущее время по МСК: {formatted_time}")
+
+#сокращалка ссылок
+@bot.message_handler(commands=['shorten'])
+def shorten_link(message):
+    try:
+        long_url = message.text.split(' ', 1)[1]
+        #если юзер скинул херню а не ссылку
+    except IndexError:
+        bot.reply_to(message, "Пожалуйста, прикрепите ссылку. Usage: `/shorten https://example.com`")
+        return
+
+    api_url = f"https://cutt.ly/api/api.php?key={CUTTLY_API_KEY}&short={long_url}"
     
-    start_parser = simple_search() # Вызываем обновленную функцию
-    
-    # Проверяем, что вернул парсер
-    if "Ошибка" in start_parser or "Не удалось найти" in start_parser:
-        bot.send_message(message.chat.id, f"Произошла ошибка: {start_parser}")
+    try:
+        response = requests.get(api_url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        bot.reply_to(message, f"Ошибка при запросе к Cuttly: {e}")
+        return
+
+    data = response.json()
+    #это кроч если выполнилось или не выполнилось
+    if data['url']['status'] == 7:
+        short_link = data['url']['shortLink']
+        bot.reply_to(message, f"Готово: {short_link}")
     else:
-        bot.send_message(message.chat.id, f"Текущее время во Владикавказе: {start_parser}")
-bot.polling()
+        error_message = data['url']['title']
+        bot.reply_to(message, f"Не удалось сократить ссылку.", "\n", 'Ошибка Cuttly: {error_message}')
+bot.infinity_polling()
