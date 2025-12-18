@@ -1,10 +1,9 @@
 #ымпорты
 import telebot
-import random
 import configparser
-import pytz
-from datetime import datetime
-import requests
+from random_side import send_random
+from get_time import send_time
+from url_shorten import shorten_link
 
 #чтоб бота не украли
 config = configparser.ConfigParser()
@@ -29,47 +28,17 @@ def send_welcome(message):
         f"Здравствуйте, {user_name}!",
         reply_markup=keyboard
     )
-#orel or reshka
+
 @bot.message_handler(commands=['random'])
-def send_random(message):
-    
-    monet = random.choice(["орел", "решка"])
-    # result
-    bot.send_message(message.chat.id, f"Я бросил монету и выпал(-a) {monet}")
+def call_random_side(message):
+    send_random(message)
 
 @bot.message_handler(commands=['get_time'])
-def send_time(message):
-    #чтоб чекать time
-    tz_vladikavkaz = pytz.timezone('Europe/Moscow')
-    current_time = datetime.now(tz_vladikavkaz)
-    formatted_time = current_time.strftime('%H:%M:%S')
-    bot.send_message(message.chat.id, f"Текущее время по МСК: {formatted_time}")
+def call_get_time(message):
+    send_time(message)
 
-#сокращалка ссылок
 @bot.message_handler(commands=['shorten'])
-def shorten_link(message):
-    try:
-        long_url = message.text.split(' ', 1)[1]
-        #если юзер скинул херню а не ссылку
-    except IndexError:
-        bot.reply_to(message, "Пожалуйста, прикрепите ссылку. Usage: `/shorten https://example.com`")
-        return
+def call_shorten(message):
+    shorten_link(message)
 
-    api_url = f"https://cutt.ly/api/api.php?key={CUTTLY_API_KEY}&short={long_url}"
-    
-    try:
-        response = requests.get(api_url)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        bot.reply_to(message, f"Ошибка при запросе к Cuttly: {e}")
-        return
-
-    data = response.json()
-    #это кроч если выполнилось или не выполнилось
-    if data['url']['status'] == 7:
-        short_link = data['url']['shortLink']
-        bot.reply_to(message, f"Готово: {short_link}")
-    else:
-        error_message = data['url']['title']
-        bot.reply_to(message, f"Не удалось сократить ссылку.", "\n", 'Ошибка Cuttly: {error_message}')
 bot.infinity_polling()
