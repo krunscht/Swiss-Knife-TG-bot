@@ -8,18 +8,15 @@ config.read("bot_config.ini")
 BOT_TOKEN = config["telegram"]["BOT_TOKEN"]
 bot = telebot.TeleBot(BOT_TOKEN)
 
-#апи сократитъ ссылку
 CUTTLY_API_KEY = config["cuttly"]["API_KEY"]
 
-#сокращалка ссылок
 @bot.message_handler(commands=['shorten'])
 def shorten_link(message):
     try:
         long_url = message.text.split(' ', 1)[1]
 
-        #если юзер скинул херню а не ссылку
     except IndexError:
-        bot.reply_to(message, "Пожалуйста, прикрепите ссылку. Usage: `/shorten https://example.com`")
+        bot.reply_to(message, "Пожалуйста, прикрепите ссылку. Пример: /shorten https://example.com")
         return
 
     api_url = f"https://cutt.ly/api/api.php?key={CUTTLY_API_KEY}&short={long_url}"
@@ -33,11 +30,10 @@ def shorten_link(message):
         return
 
     data = response.json()
-    #это кроч если выполнилось или не выполнилось
+    
     if data['url']['status'] == 7:
         short_link = data['url']['shortLink']
         bot.reply_to(message, f"Готово: {short_link}")
-        
     else:
         error_message = data['url']['title']
         bot.reply_to(message, f"Не удалось сократить ссылку.", "\n", 'Ошибка Cuttly: {error_message}')
