@@ -1,6 +1,4 @@
 import configparser
-import pytz
-from datetime import datetime
 import telebot
 from until.until import get_time
 

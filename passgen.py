@@ -4,6 +4,7 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read("bot_config.ini")
+
 BOT_TOKEN = config["telegram"]["BOT_TOKEN"]
 bot = telebot.TeleBot(BOT_TOKEN)
 
