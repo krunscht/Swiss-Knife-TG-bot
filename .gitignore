@@ -1,3 +1,15 @@
-bot_config.ini
 __pycache__/
-bot_venv/
+*.py[oc]
+build/
+wheels/
+*.egg-info
+*.yml
+bot-venv/
+*.ini
+config.ini
+.venv
+.idea/
+.DS_Store
+.env
+.vscode/
+*.yml
