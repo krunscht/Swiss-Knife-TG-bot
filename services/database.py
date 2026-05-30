@@ -62,9 +62,3 @@ def _save_log(user_id, command):
             print(f"Ошибка при записи: {e}")
         finally:
             conn.close()
-
-def log_to_db(func):
-    def wrapper(message):
-        _save_log(message.chat.id, message.text)
-        return func(message)
-    return wrapper

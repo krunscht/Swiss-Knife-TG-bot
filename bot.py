@@ -18,27 +18,22 @@ CUTTLY_API_KEY = config["cuttly"]["API_KEY"]
 database.init_db()
 
 @bot.message_handler(commands=['start'])
-@database.log_to_db
 def call_send_welcome(message):
     send_welcome(message)
 
 @bot.message_handler(commands=['random'])
-@database.log_to_db
 def call_random_side(message):
     send_random(message)
 
 @bot.message_handler(commands=['get_time'])
-@database.log_to_db
 def call_get_time(message):
     send_time(message)
 
 @bot.message_handler(commands=['shorten'])
-@database.log_to_db
 def call_shorten(message):
     shorten_link(message)
 
 @bot.message_handler(commands=['gen_pass'])
-@database.log_to_db
 def call_passgen(message):
     password_generate(message, bot)
 
